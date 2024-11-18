@@ -37,18 +37,32 @@ RUN apt-get update \
   build-essential \
   && rm -rf /var/lib/apt/lists/*
 
+ARG USERNAME=ros
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+  && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
+  && mkdir /home/$USERNAME/.config && chown $USER_UID:$USER_GID /home/$USERNAME/.config
+
+RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+  &&chmod 0440 /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
 RUN cd \
   && mkdir bin && cd bin \
   && wget https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz \
   && tar -xf nvim-linux64.tar.gz \
   && ln -s nvim-linux64/bin/nvim nvim
 
+USER $USERNAME
 RUN cd \
   && git clone https://github.com/miraculin1/dotfiles.git \
   && cd dotfiles \
   && curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
+USER $USERNAME
 RUN cd \
   && rm .bashrc \
   && cd dotfiles \
@@ -61,3 +75,5 @@ RUN cd \
   && export PATH="$HOME/bin:$PATH" \
   && nvim +PlugInstall +qall \
   && nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
+
+USER root
