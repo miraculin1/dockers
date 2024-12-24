@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04
+ # NOTE: this script doesn't work, due to anaconda failed to install withou root, USE install.sh
+FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
 ARG USERNAME=cuda
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -7,19 +8,18 @@ RUN groupadd --gid $USER_GID $USERNAME \
   && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
   && mkdir /home/$USERNAME/.config && chown $USER_UID:$USER_GID /home/$USERNAME/.config
 
-RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+RUN mkdir /etc/sudoers.d -p \
+  &&echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
   &&chmod 0440 /etc/sudoers.d/$USERNAME
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-RUN mv /etc/apt/sources.list.d/nvidia-ml.list ~/nvidia-ml.list.backup
-RUN mv /etc/apt/sources.list.d/cuda.list ~/cuda.list.backup
 RUN apt-get update \
   && apt-get install -y \
   ca-certificates
 
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.backup
-RUN echo "# 默认注释了源码仓库，如有需要可自行取消注释\ndeb https://mirrors.ustc.edu.cn/ubuntu/ focal main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ focal-security main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-security main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ focal-updates main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-updates main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ focal-backports main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-backports main restricted universe multiverse\n# 预发布软件源，不建议启用\n# deb https://mirrors.ustc.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse" > /etc/apt/sources.list
+RUN echo "# 默认注释了源码仓库，如有需要可自行取消注释\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\n# 预发布软件源，不建议启用\n# deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse" > /etc/apt/sources.list
 
 RUN apt update \
   && apt-get install -y \
@@ -39,7 +39,8 @@ RUN apt update \
   libsm6 \
   libxext6 \
   sudo \
-  gcc
+  gcc \
+  python3.10-venv
 
 RUN cd \
   && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb \
@@ -73,8 +74,4 @@ RUN cd \
   && nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
 
 RUN cd \
-  && wget https://mirrors.ustc.edu.cn/anaconda/archive/Anaconda3-2024.10-1-Linux-x86_64.sh \
-  && bash Anaconda3-2024.10-1-Linux-x86_64.sh
-
-RUN echo "channels:\n- defaults\nshow_channel_urls: true\ndefault_channels:\n- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main\n- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r\n- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2\ncustom_channels:\nconda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud\npytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" > ~/.condarc
-
+  && curl -O https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh

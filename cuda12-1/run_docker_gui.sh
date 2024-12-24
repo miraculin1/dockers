@@ -20,7 +20,7 @@ docker run -it \
   --env="NVIDIA_VISABLE_DEVICES=all" \
   --device /dev:/dev \
   --privileged \
-  -v ./mnt:/workspace \
+  -v $(pwd)/mnt:/workspace \
   --ulimit nofile=1024:524288 \
   -e "TERM=xterm-256color" \
-  nvidia/cuda:12.1.0-cudnn8-devel-ubuntu20.04
+  cuda_test

@@ -3,33 +3,31 @@ export HTTP_PROXY="http://127.0.0.1:7890"
 export https_proxy="http://127.0.0.1:7890"
 export HTTPS_PROXY="http://127.0.0.1:7890"
 
-ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-mv /etc/apt/sources.list.d/nvidia-ml.list ~/nvidia-ml.list.backup
-mv /etc/apt/sources.list.d/cuda.list ~/cuda.list.backup
-apt-get update \
+sudo apt-get update \
   && apt-get install -y \
   ca-certificates
 
-cp /etc/apt/sources.list /etc/apt/sources.list.backup
-echo "# 默认注释了源码仓库，如有需要可自行取消注释
-deb https://mirrors.ustc.edu.cn/ubuntu/ focal main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal main restricted universe multiverse
+sudo cp /etc/apt/sources.list /etc/apt/sources.list.backup
+sudo echo "# 默认注释了源码仓库，如有需要可自行取消注释
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse
 
-deb https://mirrors.ustc.edu.cn/ubuntu/ focal-security main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-security main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse
 
-deb https://mirrors.ustc.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
 
-deb https://mirrors.ustc.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
 
 # 预发布软件源，不建议启用
-# deb https://mirrors.ustc.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse
-# deb-src https://mirrors.ustc.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse" > /etc/apt/sources.list
+# deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse
+# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse" > /etc/apt/sources.list
 
-apt update \
+sudo apt update \
   && apt-get install -y \
   vim \
   curl \
@@ -80,23 +78,5 @@ cd \
   && nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
 
 cd \
-  && wget https://mirrors.ustc.edu.cn/anaconda/archive/Anaconda3-2024.10-1-Linux-x86_64.sh \
+  && curl -O https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh \
   && bash Anaconda3-2024.10-1-Linux-x86_64.sh
-
-echo "channels:
-  - defaults
-show_channel_urls: true
-default_channels:
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
-custom_channels:
-  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
-  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" > ~/.condarc
-
-
-
-unset http_proxy
-unset https_proxy
-unset HTTPS_PROXY
-unset HTTP_PROXY
