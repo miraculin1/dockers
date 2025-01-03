@@ -23,4 +23,4 @@ docker run -it \
   -v $(pwd)/mnt:/workspace \
   --ulimit nofile=1024:524288 \
   -e "TERM=xterm-256color" \
-  nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+  debian:unstable

@@ -45,9 +45,7 @@ apt update \
   libsm6 \
   libxext6 \
   sudo \
-  gcc \
-  locales \
-  bash-completion
+  gcc
 
 cd
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb
