@@ -6,8 +6,8 @@ export HTTPS_PROXY="http://127.0.0.1:7890"
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 apt-get update \
-apt-get install -y \
-certificates
+  && apt-get install -y \
+  ca-certificates
 
 cp /etc/apt/sources.list /etc/apt/sources.list.backup
 echo "# 默认注释了源码仓库，如有需要可自行取消注释
@@ -68,7 +68,7 @@ cd \
   && ln -s nvim-linux64/bin/nvim nvim
 
 cd \
-  mkdir ~/.config/ \
+  && mkdir ~/.config/ \
   && mv .bashrc .bashrc.backup\
   && cd dotfiles \
   && stow nvim \

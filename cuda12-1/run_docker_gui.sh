@@ -19,6 +19,7 @@ docker run -it \
   --env="NVIDIA_DRIVER_CAPABILITIERS=all" \
   --env="NVIDIA_VISABLE_DEVICES=all" \
   --device /dev:/dev \
+  -v /dev:/dev \
   --privileged \
   -v $(pwd)/mnt:/workspace \
   --ulimit nofile=1024:524288 \
