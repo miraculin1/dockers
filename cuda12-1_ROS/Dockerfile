@@ -139,7 +139,6 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # setup ros environment\n\
-source "/opt/anaconda3/bin/activate" \n\
 source "/opt/ros/$ROS_DISTRO/setup.bash" --\n\
 exec "$@"' > /ros_entrypoint.sh \
 && chmod +x /ros_entrypoint.sh
