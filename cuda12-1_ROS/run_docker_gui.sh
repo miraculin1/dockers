@@ -5,12 +5,12 @@
 # modify /etc/nvidia-container-runtime/config.toml line with "user"
 # to grant permmision
 # in docker file, set the max file descibe count with ulimit
-#  --user docker \
 #  --rm \
 
 docker run -it \
   --gpus all \
   --name $1 \
+  --user ros \
   --device=/dev/dri:/dev/dri \
   --network=host --ipc=host \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -24,7 +24,5 @@ docker run -it \
   -v $(pwd)/mnt:/workspace \
   --ulimit nofile=1024:524288 \
   -e "TERM=xterm-256color" \
-  317b3db0a3b2
-
-#  cuda12.1_dev
+  cuda12.1_ros:latest bash
 
