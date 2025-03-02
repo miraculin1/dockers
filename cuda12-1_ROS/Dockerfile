@@ -49,30 +49,6 @@ RUN apt-get update \
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 RUN cd \
-  && git clone https://github.com/miraculin1/dotfiles.git \
-  && cd dotfiles \
-  && curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-
-RUN cd \
-  && mkdir bin && cd bin \
-  && wget https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz \
-  && tar -xf nvim-linux64.tar.gz \
-  && ln -s nvim-linux64/bin/nvim nvim
-
-RUN cd \
-  && mkdir ~/.config/ -p\
-  && mv .bashrc .bashrc.backup\
-  && cd dotfiles \
-  && stow nvim \
-  && stow bash \
-  && stow tmux \
-  && cd \
-  && echo PATH="$HOME/bin:$PATH" >> .bashrc \
-  && export PATH="$HOME/bin:$PATH" \
-  && nvim +PlugInstall +qall
-
-RUN cd \
   && curl -O https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh
 
 RUN cd \
