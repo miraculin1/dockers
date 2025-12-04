@@ -128,6 +128,8 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 
 USER root
 
+RUN locale-gen en_US.UTF-8
+
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
