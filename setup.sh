@@ -24,7 +24,7 @@ apt-get update \
   tzdata \
   python3-venv
 
-RUN apt-get update \
+apt-get update \
   && apt-get install -y \
   libsdl-image1.2-dev \
   libsdl1.2-dev \
