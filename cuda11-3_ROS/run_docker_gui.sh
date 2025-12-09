@@ -6,6 +6,11 @@
 # to grant permmision
 # in docker file, set the max file descibe count with ulimit
 #  --rm \
+#
+# NOTE: if run on remote ssh -X session, add:
+#  -v $HOME/.Xauthority:/root/.Xauthority \
+#  -v $HOME/.Xauthority:/home/ros/.Xauthority \
+# to get through X11 auth, more test is needed
 
 docker run -it \
   --gpus all \
