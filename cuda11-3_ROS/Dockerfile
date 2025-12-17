@@ -98,6 +98,8 @@ RUN cd \
 USER $USERNAME
 RUN cd \
   && rm .bashrc \
+  && curl -fsSL https://pyenv.run | bash \
+  && pyenv install 3.11.9 \
   && cd dotfiles \
   && stow nvim \
   && stow bash \
@@ -105,9 +107,12 @@ RUN cd \
   && cd \
   && echo PATH="$HOME/bin:$PATH" >> .bashrc \
   && echo source /opt/ros/noetic/setup.bash >> .bashrc \
+  && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc \
+  && echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc \
+  && echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc \
+  && echo alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim' >> .bashrc\
   && export PATH="$HOME/bin:$PATH" \
-  && nvim +PlugInstall +qall \
-  && nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
+  && nvim +PlugInstall +qall
 
 USER root
 
