@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 apt-get update \
   && apt-get install -y \
@@ -32,12 +33,14 @@ apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
-curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
-apt-get update
-apt-get install -y ros-noetic-desktop-full \
-          || (sleep 5 && apt-get install -y ros-noetic-desktop-full --fix-missing)
 
+#### ROS ####
+# echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+# curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+# apt-get update
+# apt-get install -y ros-noetic-desktop-full \
+          # || (sleep 5 && apt-get install -y ros-noetic-desktop-full --fix-missing)
+#
 
 # Create bin directory and download Neovim
 cd \
