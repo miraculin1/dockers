@@ -61,12 +61,23 @@ cd \
 && stow bash \
 && stow tmux
 
+cd \
+  && curl -fsSL https://pyenv.run | bash \
+  && export PYENV_ROOT="$HOME/.pyenv" \
+  && export PATH="$PYENV_ROOT/bin:$PATH" \
+  && pyenv install 3.11.9
+
 # Update .bashrc with new PATH and ROS setup
 cd \
-&& echo PATH="$HOME/bin:$PATH" >> .bashrc \
-&& echo source /opt/ros/noetic/setup.bash >> .bashrc \
-&& export PATH="$HOME/bin:$PATH"
+  && echo PATH="$HOME/bin:$PATH" >> ~/.bashrc \
+  && echo source /opt/ros/noetic/setup.bash >> ~/.bashrc \
+  && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc \
+  && echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc \
+  && echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc \
+  && echo "alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim'" >> ~/.bashrc 
+  && export PYENV_ROOT="$HOME/.pyenv" \
+  && export PATH="$PYENV_ROOT/bin:$PATH" \
+  && export PATH="$HOME/bin:$PATH" \
 
-# Install Neovim plugins and language servers
-nvim +PlugInstall +qall
-nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
+
+PYENV_VERSION=3.11.9 pyenv exec nvim +PlugInstall +qall
