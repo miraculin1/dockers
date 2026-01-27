@@ -22,3 +22,5 @@ sed -i -E "s#^(ros:[^:]*:)[0-9]+:[0-9]+:#\1${NEW_UID}:${NEW_GID}:#" /etc/passwd 
 - `-N -L l_port:r_ip:r_port user@host`用于端口转发，访问跳板机后面的服务
 - `-R` 将远端的请求经过本地代理
 - `-D` 将本地的请求交给远端代理，用于给跳板机登录校园网
+
+目前远程桌面使用novnc以后可以折腾一下sunshine+moonlight
