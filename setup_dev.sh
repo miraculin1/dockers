@@ -77,7 +77,7 @@ cd \
   && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc \
   && echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc \
   && echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc \
-  && echo "alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim'" >> ~/.bashrc 
+  && echo "alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim'" >> ~/.bashrc \
   && export PYENV_ROOT="$HOME/.pyenv" \
   && export PATH="$PYENV_ROOT/bin:$PATH" \
   && export PATH="$HOME/bin:$PATH" \
