@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+is_ssh_session() {
+  [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_TTY:-}" ]]
+}
 
 DE="${DE:-xfce}"   # xfce | lxde | mate | gnome
 DISPLAY_NUM=":1"
@@ -7,7 +10,15 @@ VNC_PORT="5901"
 
 echo "=== 1. 安装必要软件包 ==="
 sudo apt update
-sudo apt install -y git openssh-server dbus-x11 tigervnc-standalone-server
+sudo apt install -y git dbus-x11 tigervnc-standalone-server
+
+if is_ssh_session; then
+  echo "[INFO] Detected SSH session; skip installing openssh-server."
+else
+  echo "[INFO] Not an SSH session; installing openssh-server..."
+  apt-get update
+  apt-get install -y --no-install-recommends openssh-server
+fi
 
 case "$DE" in
   xfce)
@@ -36,8 +47,13 @@ case "$DE" in
 esac
 
 echo "=== 2. 确保 SSH 服务启动并开机自启 ==="
-sudo systemctl enable ssh
-sudo systemctl restart ssh
+if is_ssh_session; then
+  echo "[INFO] Detected SSH session; skip enable openssh-server."
+else
+  echo "[INFO] Not an SSH session; enable openssh-server..."
+  sudo systemctl enable ssh
+  sudo systemctl restart ssh
+fi
 
 echo "=== 3. 下载 noVNC 和 websockify ==="
 mkdir -p "$HOME/novnc"
