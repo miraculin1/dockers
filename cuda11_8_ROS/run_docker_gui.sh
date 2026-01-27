@@ -29,5 +29,5 @@ docker run -it \
   -v $(pwd)/mnt:/workspace \
   --ulimit nofile=1024:524288 \
   -e "TERM=xterm-256color" \
-  cuda11.3_ros:latest bash
+  cuda11_8_ros:latest bash
 

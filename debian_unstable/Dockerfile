@@ -1,6 +1,6 @@
  # NOTE: this script doesn't work, due to anaconda failed to install withou root, USE install.sh
-FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
-ARG USERNAME=cuda
+FROM debian:unstable
+ARG USERNAME=print
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
@@ -14,12 +14,12 @@ RUN mkdir /etc/sudoers.d -p \
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-RUN apt-get update \
-  && apt-get install -y \
-  ca-certificates
+# RUN apt-get update \
+  # && apt-get install -y \
+  # ca-certificates
 
-RUN cp /etc/apt/sources.list /etc/apt/sources.list.backup
-RUN echo "# 默认注释了源码仓库，如有需要可自行取消注释\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\ndeb https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\n# 预发布软件源，不建议启用\n# deb https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse\n# deb-src https://mirrors.ustc.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse" > /etc/apt/sources.list
+# RUN cp /etc/apt/sources.list /etc/apt/sources.list.backup
+RUN echo "# 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释\ndeb https://mirrors.tuna.tsinghua.edu.cn/debian/ sid main contrib non-free non-free-firmware\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ sid main contrib non-free non-free-firmware"
 
 RUN apt update \
   && apt-get install -y \
@@ -41,11 +41,6 @@ RUN apt update \
   sudo \
   gcc \
   python3.10-venv
-
-RUN cd \
-  && wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb \
-  && dpkg -i cuda-keyring_1.1-1_all.deb \
-  && apt-get update
 
 
 USER $USERNAME
@@ -72,6 +67,3 @@ RUN cd \
   && export PATH="$HOME/bin:$PATH" \
   && nvim +PlugInstall +qall \
   && nvim +"MasonInstall cmake-language-server" +"MasonInstall clangd" +qall
-
-RUN cd \
-  && curl -O https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh

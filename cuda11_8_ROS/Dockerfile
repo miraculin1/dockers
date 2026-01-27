@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
@@ -49,11 +49,10 @@ RUN apt-get update \
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 RUN cd \
-  && curl -O https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh
+  && curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
 
 RUN cd \
-  && bash Anaconda3-2024.10-1-Linux-x86_64.sh -b -p /opt/anaconda3 \
-  && rm Anaconda3-2024.10-1-Linux-x86_64.sh
+  && bash Miniforge3-$(uname)-$(uname -m).sh -b
 
 RUN apt-get update \
   && apt-get install -y \
@@ -83,6 +82,13 @@ RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 
 USER $USERNAME
 RUN cd \
+  && curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+
+RUN cd \
+  && bash Miniforge3-$(uname)-$(uname -m).sh -b
+
+USER $USERNAME
+RUN cd \
   && mkdir bin && cd bin \
   && wget https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz \
   && tar -xf nvim-linux64.tar.gz \
@@ -96,23 +102,30 @@ RUN cd \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 USER $USERNAME
+
+RUN cd \
+  && curl -fsSL https://pyenv.run | bash \
+  && export PYENV_ROOT="$HOME/.pyenv" \
+  && export PATH="$PYENV_ROOT/bin:$PATH" \
+  && pyenv install 3.11.9
+
 RUN cd \
   && rm .bashrc \
-  && curl -fsSL https://pyenv.run | bash \
-  && pyenv install 3.11.9 \
   && cd dotfiles \
   && stow nvim \
   && stow bash \
   && stow tmux \
   && cd \
-  && echo PATH="$HOME/bin:$PATH" >> .bashrc \
-  && echo source /opt/ros/noetic/setup.bash >> .bashrc \
+  && echo PATH="$HOME/bin:$PATH" >> ~/.bashrc \
+  && echo source /opt/ros/noetic/setup.bash >> ~/.bashrc \
   && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc \
   && echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc \
   && echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc \
-  && echo alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim' >> .bashrc\
+  && echo "alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim'" >> ~/.bashrc \
+  && export PYENV_ROOT="$HOME/.pyenv" \
+  && export PATH="$PYENV_ROOT/bin:$PATH" \
   && export PATH="$HOME/bin:$PATH" \
-  && nvim +PlugInstall +qall
+  && PYENV_VERSION=3.11.9 pyenv exec nvim +PlugInstall +qall
 
 USER root
 
@@ -126,9 +139,6 @@ exec "$@"' > /ros_entrypoint.sh \
 
 RUN chown $USER_UID:$USER_GID /ros_entrypoint.sh
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
-
-USER $USERNAME
 ENTRYPOINT ["/ros_entrypoint.sh"]
 
 USER root
