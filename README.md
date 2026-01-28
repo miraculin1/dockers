@@ -1,3 +1,4 @@
+# 容器
 1. 选择版本
 2. 修改镜像内用户 uid 以适配本地用户
 3. `bash build.sh <name>` 构建镜像
@@ -23,4 +24,7 @@ sed -i -E "s#^(ros:[^:]*:)[0-9]+:[0-9]+:#\1${NEW_UID}:${NEW_GID}:#" /etc/passwd 
 - `-R` 将远端的请求经过本地代理
 - `-D` 将本地的请求交给远端代理，用于给跳板机登录校园网
 
-目前远程桌面使用novnc以后可以折腾一下sunshine+moonlight
+# setup_vnc.sh
+*目前远程桌面使用novnc以后可以折腾一下sunshine+moonlight*
+
+- 容器需要有 privilege 权限才能启动
