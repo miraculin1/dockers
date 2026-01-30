@@ -15,7 +15,7 @@
 docker run -it \
   --gpus all \
   --name $1 \
-  --user root \
+  --user ros \
   --device=/dev/dri:/dev/dri \
   --network=host --ipc=host \
   -v /tmp/.X11-unix:/tmp/.X11-unix \

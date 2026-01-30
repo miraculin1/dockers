@@ -5,41 +5,68 @@ is_ssh_session() {
   [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_TTY:-}" ]]
 }
 
-# 兼容你原来的参数：xfce|lxde|mate|gnome
-# 新增：xorg|xvfb
-DE="${DE:-xfce}"
+# ------------------------------------------------------------
+# Options (env-driven)
+# ------------------------------------------------------------
+# Supported DE:
+#   xfce | lxde | mate | gnome | openbox
+DE="${DE:-openbox}"
 
 DISPLAY_NUM="${DISPLAY_NUM:-:1}"
-VNC_PORT="${VNC_PORT:-5901}"
+
+#   :1 -> 5901, :2 -> 5902, ...
+if [[ -z "${VNC_PORT+x}" ]]; then
+  dn="${DISPLAY_NUM#:}"   # strip leading ':'
+  dn="${dn:-1}"
+  if [[ ! "$dn" =~ ^[0-9]+$ ]]; then
+    echo "[ERROR] DISPLAY_NUM must be like :1 or 1, got: '$DISPLAY_NUM'"
+    exit 1
+  fi
+  VNC_PORT=$((5900 + dn))
+fi
+
 NOVNC_PORT="${NOVNC_PORT:-6080}"
 
-# Xorg/Xvfb 屏幕参数
+# TigerVNC desktop geometry/depth
 SCREEN_RES="${SCREEN_RES:-1920x1080}"
 SCREEN_DPI="${SCREEN_DPI:-96}"
 SCREEN_DEPTH="${SCREEN_DEPTH:-24}"
 
-# x11vnc 参数（可按需调整）
-X11VNC_EXTRA="${X11VNC_EXTRA:-"-shared -forever -noxdamage -repeat -rfbport ${VNC_PORT}"}"
+# VirtualGL toggle
+ENABLE_VGL="${ENABLE_VGL:-0}"
+VGL_DEVICE="${VGL_DEVICE:-:0}"
+RUN_GUI=""   # set when vgl enabled
 
-# 桌面启动命令（给 xfce/lxde/mate/gnome 用）
+# Desktop session start command for xstartup
 START_CMD=""
 
-echo "=== 0. 基础依赖 ==="
+echo "=== 0. Install base packages ==="
 sudo apt update
-sudo apt install -y git dbus-x11 tigervnc-standalone-server
+sudo apt install -y \
+  git dbus-x11 \
+  tigervnc-standalone-server \
+  xterm x11-xserver-utils
 
-# xorg/xvfb 方案会用到（即使你用 xfce 也不影响）
-sudo apt install -y x11vnc xterm x11-xserver-utils
-
+# Optional: OpenSSH (only if not already in SSH session)
 if is_ssh_session; then
-  echo "[INFO] Detected SSH session; skip installing openssh-server."
+  echo "[INFO] SSH session detected; skip installing openssh-server."
 else
   echo "[INFO] Not an SSH session; installing openssh-server..."
   sudo apt-get update
   sudo apt-get install -y --no-install-recommends openssh-server
 fi
 
-echo "=== 1. 安装桌面/窗口管理器（按 DE）==="
+# VirtualGL (optional)
+if [[ "$ENABLE_VGL" == "1" ]]; then
+  echo "=== 0.1 Enable VirtualGL (vglrun) ==="
+  sudo apt install -y virtualgl
+  RUN_GUI="vglrun -d ${VGL_DEVICE}"
+  echo "[INFO] VirtualGL enabled. RUN_GUI='${RUN_GUI}'"
+else
+  echo "[INFO] VirtualGL disabled. Set ENABLE_VGL=1 to enable."
+fi
+
+echo "=== 1. Install desktop / WM (DE=$DE) ==="
 case "$DE" in
   xfce)
     sudo apt install -y xfce4 xfce4-goodies
@@ -54,65 +81,59 @@ case "$DE" in
     START_CMD="mate-session"
     ;;
   gnome)
-    sudo apt install -y gnome-session gnome-shell gnome-terminal x11-xserver-utils
+    sudo apt install -y gnome-session gnome-shell gnome-terminal
     START_CMD="gnome-session --session=gnome-xorg"
     ;;
-  xorg)
-    # 文档类“Xorg GPU 渲染容器”常见需要这些
-    sudo apt install -y xorg xserver-xorg-core xserver-xorg-video-dummy openbox
-    # openbox 作为轻量 WM，避免 GNOME/完整桌面带来的权限/依赖问题
-    START_CMD="openbox-session"
-    ;;
-  xvfb)
-    sudo apt install -y xvfb openbox
+  openbox)
+    sudo apt install -y openbox
     START_CMD="openbox-session"
     ;;
   *)
-    echo "Unsupported DE: $DE (use xfce|lxde|mate|gnome|xorg|xvfb)"
+    echo "Unsupported DE: $DE (use xfce|lxde|mate|gnome|openbox)"
     exit 1
     ;;
 esac
 
-echo "=== 2. SSH 服务（如需要）==="
+echo "=== 2. Start SSH service (if applicable) ==="
 if is_ssh_session; then
-  echo "[INFO] Detected SSH session; skip enable openssh-server."
+  echo "[INFO] SSH session detected; skip enabling sshd."
 else
-  echo "[INFO] Not an SSH session; enable openssh-server..."
   sudo systemctl enable ssh || true
   sudo systemctl restart ssh || true
 fi
 
-echo "=== 3. 下载 noVNC 和 websockify ==="
+echo "=== 3. Fetch noVNC + websockify (if missing) ==="
 mkdir -p "$HOME/novnc"
 cd "$HOME/novnc"
 if [ ! -d "noVNC" ]; then
   git clone https://github.com/novnc/noVNC.git noVNC
 else
-  echo "检测到已有 noVNC，跳过下载。"
+  echo "[INFO] noVNC already exists; skip."
 fi
 if [ ! -d "websockify" ]; then
   git clone https://github.com/novnc/websockify.git websockify
 else
-  echo "检测到已有 websockify，跳过下载。"
+  echo "[INFO] websockify already exists; skip."
 fi
 
-echo "=== 4. 设置 VNC 密码（交互式）==="
+echo "=== 4. VNC password (interactive, only first time) ==="
 mkdir -p ~/.vnc
 if [ ! -f ~/.vnc/passwd ]; then
   vncpasswd
 else
-  echo "检测到已有 ~/.vnc/passwd，跳过设置。"
+  echo "[INFO] ~/.vnc/passwd exists; skip."
 fi
 
-echo "=== 5. 统一准备运行时目录（容器常缺 /run/user/$UID）==="
+echo "=== 5. Ensure XDG_RUNTIME_DIR for container GUI apps ==="
 export XDG_RUNTIME_DIR="/tmp/runtime-$(id -u)"
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 chmod 1777 /tmp 2>/dev/null || true
 
-write_xstartup_for_tigervnc() {
+write_xstartup() {
   local mode="$1"
-  if [ "$mode" = "gnome" ]; then
+
+  if [[ "$mode" == "gnome" ]]; then
     cat > ~/.vnc/xstartup <<'EOF'
 #!/bin/sh
 unset SESSION_MANAGER
@@ -147,6 +168,7 @@ chmod 1777 /tmp 2>/dev/null || true
 xrdb "\$HOME/.Xresources" 2>/dev/null
 command -v xsetroot >/dev/null 2>&1 && xsetroot -solid grey
 
+# Minimal safety: ensure dbus session exists
 exec dbus-launch --exit-with-session $START_CMD
 EOF
   fi
@@ -160,105 +182,43 @@ kill_port() {
   fi
 }
 
+start_tigervnc() {
+  echo "=== 6. Start TigerVNC (Xvnc) on $DISPLAY_NUM (port $VNC_PORT) ==="
+
+  # 清理旧实例
+  tigervncserver -kill "$DISPLAY_NUM" 2>/dev/null || true
+
+  # 建议显式传 geometry/depth，避免默认分辨率太小
+  tigervncserver "$DISPLAY_NUM" \
+    -geometry "$SCREEN_RES" \
+    -depth "$SCREEN_DEPTH" \
+    -dpi "$SCREEN_DPI"
+
+  echo "[INFO] VNC display: $DISPLAY_NUM  (expected VNC port: $VNC_PORT)"
+}
+
 start_novnc() {
-  echo "=== 8. 启动 noVNC 代理（Web 访问）==="
+  echo "=== 7. Start noVNC proxy (Web -> VNC) ==="
   "$HOME/novnc/noVNC/utils/novnc_proxy" --listen "$NOVNC_PORT" --vnc "localhost:$VNC_PORT"
 }
 
-start_x11vnc_on_display() {
-  local display="$1"
-  echo "=== 7. 启动 x11vnc（导出 $display -> VNC:$VNC_PORT）==="
-  kill_port "$VNC_PORT"
-  nohup x11vnc -display "$display" -rfbauth "$HOME/.vnc/passwd" $X11VNC_EXTRA >/tmp/x11vnc.log 2>&1 &
-  echo "[INFO] x11vnc log: /tmp/x11vnc.log"
-}
-
-start_xorg_dummy() {
-  echo "=== 6. 启动 Xorg (dummy) 于 $DISPLAY_NUM ==="
-
-  mkdir -p "$HOME/.xorg"
-  cat > "$HOME/.xorg/xorg-dummy.conf" <<EOF
-Section "Device"
-  Identifier  "DummyDevice"
-  Driver      "dummy"
-  VideoRam    256000
-EndSection
-
-Section "Monitor"
-  Identifier  "DummyMonitor"
-  HorizSync   28.0-80.0
-  VertRefresh 48.0-75.0
-EndSection
-
-Section "Screen"
-  Identifier  "DummyScreen"
-  Device      "DummyDevice"
-  Monitor     "DummyMonitor"
-  DefaultDepth ${SCREEN_DEPTH}
-  SubSection "Display"
-    Depth     ${SCREEN_DEPTH}
-    Modes     "${SCREEN_RES}"
-  EndSubSection
-EndSection
-
-Section "ServerLayout"
-  Identifier  "DummyLayout"
-  Screen      "DummyScreen"
-EndSection
-EOF
-
-  pkill -f "Xorg ${DISPLAY_NUM}" 2>/dev/null || true
-  sudo nohup Xorg "${DISPLAY_NUM}" -config "$HOME/.xorg/xorg-dummy.conf" -noreset -logfile /tmp/Xorg.log >/dev/null 2>&1 &
-  echo "[INFO] Xorg log: /tmp/Xorg.log"
-  sleep 1
-}
-
-start_xvfb() {
-  echo "=== 6. 启动 Xvfb 于 $DISPLAY_NUM ==="
-  pkill -f "Xvfb ${DISPLAY_NUM}" 2>/dev/null || true
-  nohup Xvfb "${DISPLAY_NUM}" -screen 0 "${SCREEN_RES}x${SCREEN_DEPTH}" -dpi "${SCREEN_DPI}" >/tmp/Xvfb.log 2>&1 &
-  echo "[INFO] Xvfb log: /tmp/Xvfb.log"
-  sleep 1
-}
-
-start_light_session_on_display() {
-  local display="$1"
-  echo "=== 6.1 在 $display 上启动轻量会话（openbox + xterm）==="
-  export DISPLAY="$display"
-
-  if command -v dbus-launch >/dev/null 2>&1; then
-    eval "$(dbus-launch --sh-syntax)"
-    export DBUS_SESSION_BUS_ADDRESS DBUS_SESSION_BUS_PID
+print_usage_hint() {
+  echo "=== HINT: how to launch GUI apps ==="
+  echo "[INFO] Access desktop via noVNC port: ${NOVNC_PORT}"
+  echo "[INFO] Inside container, DISPLAY is typically ${DISPLAY_NUM}"
+  if [[ "$ENABLE_VGL" == "1" ]]; then
+    echo "[INFO] VirtualGL enabled. Launch GPU-accelerated OpenGL apps using:"
+    echo "       \$RUN_GUI <gui_app>     (RUN_GUI='${RUN_GUI}')"
+    echo "       Example: \$RUN_GUI glxinfo -B"
+    echo "       Example: \$RUN_GUI ./isaac-sim.sh"
+  else
+    echo "[INFO] VirtualGL disabled. Launch apps normally, or set ENABLE_VGL=1."
   fi
-
-  command -v xsetroot >/dev/null 2>&1 && xsetroot -solid grey || true
-  (command -v openbox-session >/dev/null 2>&1 && openbox-session >/tmp/openbox.log 2>&1 &) || true
-  (command -v xterm >/dev/null 2>&1 && xterm -geometry 120x30+20+20 -fa Monospace -fs 12 >/tmp/xterm.log 2>&1 &) || true
 }
 
-echo "=== 6. 按模式启动 ==="
-case "$DE" in
-  xorg)
-    start_xorg_dummy
-    start_light_session_on_display "$DISPLAY_NUM"
-    start_x11vnc_on_display "$DISPLAY_NUM"
-    start_novnc
-    ;;
-  xvfb)
-    start_xvfb
-    start_light_session_on_display "$DISPLAY_NUM"
-    start_x11vnc_on_display "$DISPLAY_NUM"
-    start_novnc
-    ;;
-  *)
-    echo "=== 6. 写入 xstartup（桌面：$DE）==="
-    write_xstartup_for_tigervnc "$DE"
-
-    echo "=== 7. 启动 VNC（Xvnc: $DISPLAY_NUM -> localhost:$VNC_PORT）==="
-    tigervncserver -kill "$DISPLAY_NUM" 2>/dev/null || true
-    tigervncserver "$DISPLAY_NUM"
-
-    start_novnc
-    ;;
-esac
+echo "=== 6. Write xstartup and start session (DE=$DE) ==="
+write_xstartup "$DE"
+start_tigervnc
+print_usage_hint
+start_novnc
 
