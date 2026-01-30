@@ -34,7 +34,7 @@ SCREEN_DEPTH="${SCREEN_DEPTH:-24}"
 
 # VirtualGL toggle
 ENABLE_VGL="${ENABLE_VGL:-0}"
-VGL_DEVICE="${VGL_DEVICE:-:0}"
+VGL_DEVICE="${VGL_DEVICE:-${DISPLAY_NUM}}"
 RUN_GUI=""   # set when vgl enabled
 
 # Desktop session start command for xstartup
