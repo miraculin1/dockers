@@ -21,8 +21,8 @@ docker run -it \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -e DISPLAY=$DISPLAY \
   --env="QT_X11_NO_MITSHM=1" \
-  --env="NVIDIA_DRIVER_CAPABILITIERS=all" \
-  --env="NVIDIA_VISABLE_DEVICES=all" \
+  --env="NVIDIA_DRIVER_CAPABILITIES=all" \
+  --env="NVIDIA_VISIBLE_DEVICES=all" \
   --device /dev:/dev \
   -v /dev:/dev \
   --privileged \
