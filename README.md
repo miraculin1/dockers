@@ -38,6 +38,18 @@ sed -i -E "s#^(ros:[^:]*:)[0-9]+:[0-9]+:#\1${NEW_UID}:${NEW_GID}:#" /etc/passwd 
 
 - 容器需要有 privilege 权限才能启动
 
+## Miniforge 使用说明
+如果容器内已安装 Miniforge（默认路径 `~/miniforge3`），可按以下步骤初始化并启用：
+
+```bash
+source ~/miniforge3/bin/activate
+conda init --all
+```
+
+执行 `conda init --all` 后，建议重新打开一个 shell 以确保初始化脚本生效。
+
+在使用 `run_docker_gui.sh` 启动并正确透传 X11 的前提下，`rviz`、`rqt` 等可视化窗口可在本机或远程桌面环境中无缝显示与交互。
+
 ## cuda11_8_ROS 使用说明
 ### 1) 构建镜像
 进入目录后执行：
