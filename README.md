@@ -14,19 +14,12 @@ docker run --rm --gpus all nvidia/cuda:11.8.0-base-ubuntu20.04 nvidia-smi
 4. 启动时为了保证 gui 以及显卡调用 `bash run_docker_gui.sh <name>`
 
 值得注意的：
-- 当需要后续修改容器内 UID 以及 GID，以 root 启动容器，然后运行以下命令
+- 当需要后续修改容器内 UID 以及 GID，以 root 启动容器，指定
 ``` bash
-usermod -u ${NEW_UID} -g ${NEW_GID}
-groupdel ros
-groupadd -g ${NEW_GID} ros
-
-find /home/ros -xdev \( -user 1000 -o -group 1000 \) -print0 \
-  | xargs -0 -r -n 200 -P "$(nproc)" chown -- 1001:1001
-
-# 强力修改用户 uid gid
-sed -i -E "s#^(ros:[^:]*:)[0-9]+:[0-9]+:#\1${NEW_UID}:${NEW_GID}:#" /etc/passwd && \
-
+export NEW_UID=1001
+export NEW_GID=1001
 ```
+后运行 ch_uid_gid.sh
 
 在使用的时候有几个常用 ssh 参数
 - `-N -L l_port:r_ip:r_port user@host`用于端口转发，访问跳板机后面的服务
