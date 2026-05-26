@@ -1,6 +1,8 @@
 # 容器
 ## 前置依赖
-- 需要提前安装 `docker` 与 `nvidia-container-toolkit`。
+- 需要提前安装 `docker` 与 `nvidia-container-toolkit==1.17.6`。
+> `nvidia-container-toolkit 1.18.0~1.19.1` 目前有 bug，因此依赖显卡的仿真环境需要安装 1.17.6
+ [issue#1559](https://github.com/NVIDIA/nvidia-container-toolkit/issues/1559)
 - 建议先做最小可用性检查：
 ```bash
 docker --version
