@@ -1,6 +1,6 @@
 #! /usr/bin/bash
 
-docker build --network host -t $1 . \
+docker build --network host -t cuda12_2_ros . \
   --build-arg http_proxy=$http_proxy \
   --build-arg https_proxy=$https_proxy
 
