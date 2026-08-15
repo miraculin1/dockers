@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 pip install \
   catkin_tools \
   catkin_pkg \
@@ -10,6 +13,6 @@ pip install \
   defusedxml \
   netifaces \
   distro \
-  osrf-pycommon
-  pycryptodomex>=3.20
-  python-gnupg>=0.5
+  osrf-pycommon \
+  "pycryptodomex>=3.20" \
+  "python-gnupg>=0.5"

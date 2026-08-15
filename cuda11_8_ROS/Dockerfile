@@ -44,7 +44,14 @@ RUN apt-get update \
   locales \
   bash-completion \
   tzdata \
-  python3-venv
+  python3-venv \
+  libssl-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libffi-dev \
+  liblzma-dev
 
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
@@ -61,7 +68,7 @@ RUN apt-get update \
   build-essential \
   && rm -rf /var/lib/apt/lists/*
 
-RUN echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+RUN echo "deb http://packages.ros.org/ros/ubuntu focal main" > /etc/apt/sources.list.d/ros-latest.list
 RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 RUN apt-get update
 RUN apt-get install -y ros-noetic-desktop-full \

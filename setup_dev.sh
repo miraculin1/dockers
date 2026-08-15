@@ -23,7 +23,14 @@ apt-get update \
   locales \
   bash-completion \
   tzdata \
-  python3-venv
+  python3-venv \
+  libssl-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  libffi-dev \
+  liblzma-dev
 
 apt-get update \
   && apt-get install -y \
