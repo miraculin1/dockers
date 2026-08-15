@@ -14,3 +14,4 @@ node -v # Should print "v24.15.0".
 npm -v # Should print "11.12.1".
 
 npm i -g @openai/codex
+npm i -g opencode-ai
