@@ -96,7 +96,7 @@ RUN cd \
 
 USER $USERNAME
 RUN cd \
-  && mkdir bin && cd bin \
+  && mkdir -p .local/bin && cd .local/bin \
   && wget https://github.com/neovim/neovim/releases/download/v0.9.5/nvim-linux64.tar.gz \
   && tar -xf nvim-linux64.tar.gz \
   && ln -s nvim-linux64/bin/nvim nvim
@@ -123,7 +123,7 @@ RUN cd \
   && stow bash \
   && stow tmux \
   && cd \
-  && echo PATH="$HOME/bin:$PATH" >> ~/.bashrc \
+  && echo PATH="$HOME/.local/bin:$PATH" >> ~/.bashrc \
   && echo source /opt/ros/noetic/setup.bash >> ~/.bashrc \
   && echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc \
   && echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc \
@@ -131,7 +131,7 @@ RUN cd \
   && echo "alias vim='PYENV_VERSION=3.11.9 pyenv exec nvim'" >> ~/.bashrc \
   && export PYENV_ROOT="$HOME/.pyenv" \
   && export PATH="$PYENV_ROOT/bin:$PATH" \
-  && export PATH="$HOME/bin:$PATH" \
+  && export PATH="$HOME/.local/bin:$PATH" \
   && PYENV_VERSION=3.11.9 pyenv exec nvim +PlugInstall +qall
 
 USER root
